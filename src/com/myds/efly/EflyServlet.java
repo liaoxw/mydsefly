@@ -38,7 +38,7 @@ public class EflyServlet extends HttpServlet {
 			case HOTEL_ROOM:
 				this.anlysisRoomEmpty(out,hotelId, req.getParameter("type"), req.getParameter("year"), req.getParameter("month"));
 				break;
-			case VIEW:
+			case HOTEL_ROOM_INFO:
 				break;
 			default:
 			}
@@ -145,6 +145,36 @@ public class EflyServlet extends HttpServlet {
 					obj.put("price", price);
 					json.put(obj);
 				}
+			}
+		}
+		out.println(json.toString());
+	}
+	
+	public void anlysisHotelRoom(PrintWriter out,String hotelId) throws Exception{
+		String url = "http://www.eztravel.com.tw/ezec/htl_tw/htltw_room_desc.jsp?prod_no=";
+		String content = this.getContent(url);
+		JSONArray json = new JSONArray();
+		if(content != null){
+			Document doc = Jsoup.parse(content);
+			Elements table = doc.select("table.tb-1");
+			for(int i=0;i<table.size();i++){				
+				Elements txt = table.get(i).select(".txt-s2");
+				String id = txt.get(0).text();
+				String roomName = txt.get(1).text();
+				String summary = txt.get(2).text();
+				String price = txt.get(3).select(".txt-or").first().text().replaceAll(",", "").replaceAll("元起","");
+				String roomType = txt.get(4).select("a.listmore-link").first().attr("onclick").substring(69,72);
+				String proj = txt.get(5).select(".txt-or").first().text().substring(6);
+				String intro = txt.get(5).select("p").get(2).text();
+				JSONObject obj = new JSONObject();
+				obj.put("id", id);
+				obj.put("roonName", roomName);
+				obj.put("summary", summary);
+				obj.put("price", price);
+				obj.put("roomType", roomType);
+				obj.put("intro", intro);
+				obj.put("proj", proj);
+				json.put(obj);
 			}
 		}
 		out.println(json.toString());
