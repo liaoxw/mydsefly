@@ -8,5 +8,6 @@ public class EflyServlet extends HttpServlet {
 		resp.setContentType("text/plain");
 		resp.getWriter().println("Hello, world");
 		System.out.println(req.getParameter("model"));
+		System.out.println("sdfsdf");
 	}
 }
