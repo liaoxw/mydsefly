@@ -39,8 +39,11 @@ public class EflyServlet extends HttpServlet {
 				this.anlysisRoomEmpty(out,hotelId, req.getParameter("type"), req.getParameter("year"), req.getParameter("month"));
 				break;
 			case HOTEL_ROOM_INFO:
+				this.anlysisHotelRoom(out, hotelId);
 				break;
 			default:
+				out.print("null");
+				break;
 			}
 		}catch(Exception e){
 			resp.getWriter().println(e.getMessage());
@@ -151,7 +154,7 @@ public class EflyServlet extends HttpServlet {
 	}
 	
 	public void anlysisHotelRoom(PrintWriter out,String hotelId) throws Exception{
-		String url = "http://www.eztravel.com.tw/ezec/htl_tw/htltw_room_desc.jsp?prod_no=";
+		String url = "http://www.eztravel.com.tw/ezec/htl_tw/htltw_room_desc.jsp?prod_no="+hotelId;
 		String content = this.getContent(url);
 		JSONArray json = new JSONArray();
 		if(content != null){
@@ -159,21 +162,26 @@ public class EflyServlet extends HttpServlet {
 			Elements table = doc.select("table.tb-1");
 			for(int i=0;i<table.size();i++){				
 				Elements txt = table.get(i).select(".txt-s2");
-				String id = txt.get(0).text();
+				//String id = txt.get(0).text();
 				String roomName = txt.get(1).text();
 				String summary = txt.get(2).text();
-				String price = txt.get(3).select(".txt-or").first().text().replaceAll(",", "").replaceAll("元起","");
+				String[] ps = txt.get(3).select(".txt-or").first().text().replaceAll(",", "").replaceAll("元起","").split(" ");
+				String price = ps[0];
+				String priceX = "";
+				if(ps.length > 1) priceX = ps[1];
 				String roomType = txt.get(4).select("a.listmore-link").first().attr("onclick").substring(69,72);
-				String proj = txt.get(5).select(".txt-or").first().text().substring(6);
+				String proj = txt.get(5).select(".txt-or").first().text();
+				
 				String intro = txt.get(5).select("p").get(2).text();
 				JSONObject obj = new JSONObject();
-				obj.put("id", id);
-				obj.put("roonName", roomName);
-				obj.put("summary", summary);
-				obj.put("price", price);
-				obj.put("roomType", roomType);
+				obj.put("hotelId", hotelId);
 				obj.put("intro", intro);
+				obj.put("roomName", roomName);
+				obj.put("price",price );
 				obj.put("proj", proj);
+				obj.put("summary", summary);
+				obj.put("priceX", priceX);
+				obj.put("type", roomType);
 				json.put(obj);
 			}
 		}
