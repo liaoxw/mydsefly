@@ -20,6 +20,7 @@ import com.google.appengine.api.urlfetch.URLFetchServiceFactory;
 @SuppressWarnings("serial")
 public class EflyServlet extends HttpServlet {
 	public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {		
+		System.out.println(req.getQueryString());
 		resp.setContentType("text/html");
 		resp.setCharacterEncoding("utf-8");
 		PrintWriter out = resp.getWriter();
@@ -35,8 +36,8 @@ public class EflyServlet extends HttpServlet {
 			case HOTEL_INFO:
 				this.anlysisHotelInfo(out,hotelId);
 				break;
-			case HOTEL_ROOM:
-				this.anlysisRoomEmpty(out,hotelId, req.getParameter("type"), req.getParameter("year"), req.getParameter("month"));
+			case HOTEL_ROOM_STATUS:
+				this.anlysisRoomStatus(out,hotelId, req.getParameter("type"), req.getParameter("year"), req.getParameter("month"));
 				break;
 			case HOTEL_ROOM_INFO:
 				this.anlysisHotelRoom(out, hotelId);
@@ -52,7 +53,7 @@ public class EflyServlet extends HttpServlet {
 		
 	}
 	
-	public String getContent(String url) throws Exception{
+	private String getContent(String url) throws Exception{
 		HTTPResponse response = URLFetchServiceFactory.getURLFetchService().fetch(new URL(url));
 		byte[] data = response.getContent();
 		if(data != null){
@@ -65,7 +66,7 @@ public class EflyServlet extends HttpServlet {
 	 * 分析酒店资料
 	 * @throws Exception
 	 */
-	public void anlysisHotelInfo(PrintWriter out,String hotelId) throws Exception{
+	private void anlysisHotelInfo(PrintWriter out,String hotelId) throws Exception{
 		//简介				
 		String url = "http://www.eztravel.com.tw/ezec/htl_tw/htltw_htl_detail.jsp?prod_no="+hotelId;
 		String content = this.getContent(url);
@@ -105,7 +106,7 @@ public class EflyServlet extends HttpServlet {
 		out.println(json.toString());		
 	}
 	
-	public void anlysisHotelImage(PrintWriter out,String hotelId) throws Exception{
+	private void anlysisHotelImage(PrintWriter out,String hotelId) throws Exception{
 		//简介				
 		String url = "http://www.eztravel.com.tw/ezec/htl_tw/htltw_puppic.jsp?prod_no="+hotelId;
 		String content = this.getContent(url);
@@ -126,7 +127,7 @@ public class EflyServlet extends HttpServlet {
 		out.println(json.toString());
 	}
 	
-	public void anlysisRoomEmpty(PrintWriter out,String hotelId,String type,String year,String month) throws Exception{
+	private void anlysisRoomStatus(PrintWriter out,String hotelId,String type,String year,String month) throws Exception{
 		String url = "http://www.eztravel.com.tw/ezec/htl_tw/htltw_month_room_np.jsp?prod_no="+hotelId+"&cond1_type="+type+"&year="+year+"&month="+month;
 		String content = this.getContent(url);
 		JSONArray json = new JSONArray();
@@ -153,9 +154,10 @@ public class EflyServlet extends HttpServlet {
 		out.println(json.toString());
 	}
 	
-	public void anlysisHotelRoom(PrintWriter out,String hotelId) throws Exception{
+	private void anlysisHotelRoom(PrintWriter out,String hotelId) throws Exception{
 		String url = "http://www.eztravel.com.tw/ezec/htl_tw/htltw_room_desc.jsp?prod_no="+hotelId;
 		String content = this.getContent(url);
+		System.out.println(content);
 		JSONArray json = new JSONArray();
 		if(content != null){
 			Document doc = Jsoup.parse(content);
