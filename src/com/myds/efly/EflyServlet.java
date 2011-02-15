@@ -12,6 +12,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.google.appengine.api.urlfetch.HTTPResponse;
@@ -41,6 +42,9 @@ public class EflyServlet extends HttpServlet {
 				break;
 			case HOTEL_ROOM_INFO:
 				this.anlysisHotelRoom(out, hotelId);
+				break;
+			case HOTEL_DESC:
+				this.anlysisHotelDesc(out, hotelId);
 				break;
 			default:
 				out.print("null");
@@ -188,5 +192,24 @@ public class EflyServlet extends HttpServlet {
 			}
 		}
 		out.println(json.toString());
+	}
+	
+	private void anlysisHotelDesc(PrintWriter out,String hotelId) throws Exception{
+		String url = "http://www.eztravel.com.tw/ezec/htl_tw/htltw_prod_desc.jsp?prod_no="+hotelId;
+		String content = this.getContent(url);
+		JSONObject json = new JSONObject();
+		if(content != null){
+			Document doc = Jsoup.parse(content);
+			Elements intro = doc.select("div.intro p");
+			String features = intro.get(0).text().replaceAll("【飯店特色】", "");
+			String evaluate = intro.get(6).select("img").first().attr("src");
+			evaluate = evaluate.substring(evaluate.length()-6).replaceAll(".gif", "");
+			Element caption = doc.select("div.box-1 p").first();
+			json.put("features", features);
+			json.put("evaluate", evaluate);
+			json.put("caption", caption.html());
+			json.put("hotel_id", hotelId);
+		}
+		out.print(json.toString());
 	}
 }

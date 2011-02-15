@@ -8,7 +8,8 @@ public class Params {
 		HOTEL_INFO(3),
 		HOTEL_IMAGE(4),
 		HOTEL_ROOM_STATUS(5),
-		HOTEL_ROOM_INFO(6);
+		HOTEL_ROOM_INFO(6),
+		HOTEL_DESC(7);
 		
 		private final int val;
 		
