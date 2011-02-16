@@ -77,22 +77,26 @@ public class EflyServlet extends HttpServlet {
 		JSONObject json = new JSONObject();
 		if (content != null) {			
 			Document doc = Jsoup.parse(content);
-			String name = doc.select("td.green_big").first().text();
-			json.put("name", name);
+			Element name = doc.select("td.green_big").first();
+			if(name == null) return;
+			json.put("name", name.text());
 			Elements greenTxt = doc.select("td.green_txt");
 			String address = greenTxt.get(1).text();
-			json.put("address", address);
+			json.put("address", address.replaceAll("地址：", ""));
 			String telphone = greenTxt.get(2).text();
-			json.put("telphone", telphone);
+			json.put("telphone", telphone.replaceAll("電話：", ""));
 			String[] checkTimes = greenTxt.get(3).text().split(" ");
-			String checkInTime = checkTimes[0].split("：")[1];
+			String checkInTime ="";
+			if(checkTimes[0].split("：").length>1){
+				checkInTime = checkTimes[0].split("：")[1];
+			}
 			json.put("checkInTime", checkInTime);
 			String checkOutTime = checkTimes[1].split("：")[1];
 			json.put("checkOutTime", checkOutTime);
 			String sendPickService = greenTxt.get(4).text();
-			json.put("sendPickService", sendPickService);
+			json.put("sendPickService", sendPickService.replaceAll("接送服務：", ""));
 			String website = greenTxt.get(5).text();
-			json.put("website", website);
+			json.put("website", website.replaceAll("飯店網址：", ""));
 			Elements txt = doc.select("td.txt");
 			String roomFacility = txt.get(2).text();
 			json.put("roomFacility", roomFacility);
@@ -103,7 +107,7 @@ public class EflyServlet extends HttpServlet {
 			String transportationInfo = txt.get(8).text();
 			json.put("transportationInfo", transportationInfo);
 			String sendcancelPolicy = txt.get(10).text();
-			json.put("sendcancelPolicy", sendcancelPolicy);
+			json.put("sendcancelPolicy", sendcancelPolicy.replaceAll("取消訂房相關規定：", ""));
 			String relatedExplanation = txt.get(12).text();
 			json.put("relatedExplanation", relatedExplanation);			
 		}
@@ -133,7 +137,6 @@ public class EflyServlet extends HttpServlet {
 	
 	private void anlysisRoomStatus(PrintWriter out,String hotelId,String type,String year,String month) throws Exception{
 		String url = "http://www.eztravel.com.tw/ezec/htl_tw/htltw_month_room_np.jsp?prod_no="+hotelId+"&cond1_type="+type+"&year="+year+"&month="+month;
-		System.out.println(url);
 		String content = this.getContent(url);
 		JSONArray json = new JSONArray();
 		if(content != null){
@@ -162,7 +165,6 @@ public class EflyServlet extends HttpServlet {
 	private void anlysisHotelRoom(PrintWriter out,String hotelId) throws Exception{
 		String url = "http://www.eztravel.com.tw/ezec/htl_tw/htltw_room_desc.jsp?prod_no="+hotelId;
 		String content = this.getContent(url);
-		System.out.println(content);
 		JSONArray json = new JSONArray();
 		if(content != null){
 			Document doc = Jsoup.parse(content);
@@ -170,6 +172,7 @@ public class EflyServlet extends HttpServlet {
 			for(int i=0;i<table.size();i++){				
 				Elements txt = table.get(i).select(".txt-s2");
 				//String id = txt.get(0).text();
+				if(txt.size()<2) return;
 				String roomName = txt.get(1).text();
 				String summary = txt.get(2).text();
 				String[] ps = txt.get(3).select(".txt-or").first().text().replaceAll(",", "").replaceAll("元起","").split(" ");
@@ -177,9 +180,14 @@ public class EflyServlet extends HttpServlet {
 				String priceX = "";
 				if(ps.length > 1) priceX = ps[1];
 				String roomType = txt.get(4).select("a.listmore-link").first().attr("onclick").substring(69,72);
-				String proj = txt.get(5).select(".txt-or").first().text();
-				
-				String intro = txt.get(5).select("p").get(2).text();
+				Element projs = txt.get(5).select(".txt-or").first();
+				String proj = "";
+				if(projs != null) proj = projs.text().replaceAll("【專案名稱】", "");
+				Elements intros = txt.get(5).select("p");
+				String intro = "";
+				if(intros.size()>2){
+					intro = intros.get(2).text();
+				}
 				JSONObject obj = new JSONObject();
 				obj.put("hotelId", hotelId);
 				obj.put("intro", intro);
