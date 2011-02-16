@@ -133,6 +133,7 @@ public class EflyServlet extends HttpServlet {
 	
 	private void anlysisRoomStatus(PrintWriter out,String hotelId,String type,String year,String month) throws Exception{
 		String url = "http://www.eztravel.com.tw/ezec/htl_tw/htltw_month_room_np.jsp?prod_no="+hotelId+"&cond1_type="+type+"&year="+year+"&month="+month;
+		System.out.println(url);
 		String content = this.getContent(url);
 		JSONArray json = new JSONArray();
 		if(content != null){
