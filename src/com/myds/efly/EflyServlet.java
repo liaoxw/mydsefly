@@ -153,8 +153,11 @@ public class EflyServlet extends HttpServlet {
 					}else{
 						obj.put("count", count.replaceAll("餘", "").replaceAll("間", ""));
 					}
-					obj.put("day", p.get(0).text());
+					String day = p.get(0).text();
+					obj.put("day", day);
 					obj.put("price", price);
+					obj.put("month",month);
+					obj.put("date", year+"/"+month+"/"+day);
 					json.put(obj);
 				}
 			}
@@ -180,20 +183,21 @@ public class EflyServlet extends HttpServlet {
 				String priceX = "";
 				if(ps.length > 1) priceX = ps[1];
 				String roomType = txt.get(4).select("a.listmore-link").first().attr("onclick").substring(69,72);
-				Element projs = txt.get(5).select(".txt-or").first();
-				String proj = "";
-				if(projs != null) proj = projs.text().replaceAll("【專案名稱】", "");
-				Elements intros = txt.get(5).select("p");
-				String intro = "";
-				if(intros.size()>2){
-					intro = intros.get(2).text();
-				}
+				String intro = txt.get(5).html();
+//				Element projs = txt.get(5).select(".txt-or").first();
+//				String proj = "";
+//				if(projs != null) proj = projs.text().replaceAll("【專案名稱】", "");
+//				Elements intros = txt.get(5).select("p");
+//				String intro = "";
+//				if(intros.size()>2){
+//					intro = intros.get(2).text();
+//				}
 				JSONObject obj = new JSONObject();
 				obj.put("hotelId", hotelId);
 				obj.put("intro", intro);
 				obj.put("roomName", roomName);
 				obj.put("price",price );
-				obj.put("proj", proj);
+				obj.put("proj", "");
 				obj.put("summary", summary);
 				obj.put("priceX", priceX);
 				obj.put("type", roomType);
@@ -210,9 +214,18 @@ public class EflyServlet extends HttpServlet {
 		if(content != null){
 			Document doc = Jsoup.parse(content);
 			Elements intro = doc.select("div.intro p");
-			String features = intro.get(0).text().replaceAll("【飯店特色】", "");
-			String evaluate = intro.get(6).select("img").first().attr("src");
-			evaluate = evaluate.substring(evaluate.length()-6).replaceAll(".gif", "");
+			if(intro.size() == 0) return;
+			Element featuress = intro.get(0);
+			String features = "";
+			if(featuress != null){
+				features = featuress.text().replaceAll("【飯店特色】", "");
+			}
+			Element evaluates = intro.get(6).select("img").first();
+			String evaluate = "00";
+			if(evaluates != null){
+				evaluate = evaluates.attr("src");
+				evaluate = evaluate.substring(evaluate.length()-6).replaceAll(".gif", "");
+			}
 			Element caption = doc.select("div.box-1 p").first();
 			json.put("features", features);
 			json.put("evaluate", evaluate);
